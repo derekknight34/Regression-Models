@@ -1,0 +1,128 @@
+---
+title: "Hockey Pool Linear Regression"
+author: "Derek Knight"
+date: "2023-12-12"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Preparation and Library Import
+
+In this section, we begin by setting up our environment and preparing the data for analysis. The steps involved are as follows:
+
+Installing and Loading Necessary Libraries
+
+We start by installing and then loading the car package. This package provides functions for regression diagnostics and other statistical tools which are essential for our analysis.
+
+## Loading the Dataset
+
+Next, we load our datasets from CSV files. Two datasets are used in this analysis:
+
+    QuantHockey Dataset - Less Features LR.csv: This dataset contains selected features and is used for the primary analysis.
+    QuantHockey Dataset Test.csv: This dataset is used for our predications.
+
+```{r}
+class(df)
+
+
+df <- read.csv("QuantHockey Dataset - Less Features LR.csv")
+test_df <- read.csv("QuantHockey Dataset Test.csv")
+```
+
+## Regression Model Building
+
+The steps include:
+
+Renaming columns, defining the response variable, and fitting the model.
+
+- Selection of Regressors: A subset of variables is chosen as regressors based on their potential influence on the response variable.
+- Fitting the Linear Regression Model: Fit the linear regression model to our data.
+- Model Summary and ANOVA: The summary of the regression model provides insights into the fit and ANOVA is performed to compare models or test certain model assumptions.
+
+
+```{r}
+
+colnames(df) <- c("Rk", "Age", "GP", "G", "A", "P", "PlusMinus", "PPG", "SHG", "GWG", "OTG",
+                  "PPA", "SHA", "GWA", "PPP", "SHP", "GWP", "OTP", "PPPPercent", "GoalsPer60", 
+                  "AssistsPer60", "PointsPer60", "ESGoalsPer60", "ESAssistsPer60", "ESPointsPer60", 
+                  "PPGoalsPer60", "PPAssistsPer60", "PPPointsPer60", "GoalsPerGame", "AssistsPerGame", 
+                  "PointsPerGame", "Shots", "ShootingPercent", "Hits", "BS", "Year", "FantasyPoints",
+                  "NextYearFantasyPoints")
+
+# Define the response variable
+y <- df$NextYearFantasyPoints
+
+# Fit a linear regression model with selected regressors
+selected_regressors <- c("Rk", "Age", "GP","G", "A", "PPG",
+                        "PPA", "SHA", "GWG", 
+                        "Shots", "Hits", "BS")
+
+# Include only the selected regressors in the formula
+formula_string <- paste("y ~", paste(selected_regressors, collapse = " + "))
+
+# Fit a linear regression model with selected regressors
+model <- lm(as.formula(formula_string), data = df)
+
+# View regression summary
+summary(model)
+
+anova(model)
+
+
+```
+
+```{r}
+residuals <- resid(model)
+# Residual Plot:
+# Residual plot to visually inspect the distribution of residuals and identify 
+plot(model, which = 1)
+
+# Normality Check:
+# Check for the normality of residuals using a Q-Q plot:
+qqnorm(residuals)
+qqline(residuals)
+
+# Homoscedasticity Check:
+# Check for constant variance (homoscedasticity) by plotting residuals against the predictor variable
+plot(df$GP, residuals)
+
+# Check for Outliers:
+# Identify potential outliers by examining the residuals. 
+boxplot(residuals)
+plot(model, which = 5)  # Leverage plot
+
+# Influence Points:
+# Identify influential observations using Cook's distance:
+infl <- influence.measures(model)
+# plot(infl, which = 4)  # Cook's distance plot
+```
+# Generating Predictions and Exporting Results
+
+## Making Predictions
+
+Using the predict() function, we generate predictions from our linear regression model for the test_df dataset, which contains data we want to evaluate but wasn't used in the model training phase.
+
+## Combining Predictions with Original Data
+
+To facilitate easy analysis and comparison, we combine the predictions with the original test data. This merged dataset includes all the features from test_df along with a new column Predictions that holds our model's predictions.
+
+## Exporting the Results
+
+Finally, we export the combined dataset with predictions to a CSV file. This file, named predictions.csv, can be used for detailed analysis, visualization, or presentation of the model's output.
+
+```{r}
+predictions <- predict(model, newdata = test_df)
+
+# Combine the original data with the predictions
+result_data <- cbind(test_df, Predictions = predictions)
+
+# Specify the file path for the CSV file
+csv_file_path <- "predictions.csv"
+
+# Export the combined data to a CSV file
+write.csv(result_data, file = csv_file_path, row.names = FALSE)
+
+```
