@@ -1,7 +1,7 @@
 Fantasy Hockey Points Prediction
 Project Overview
 
-This project focuses on predicting "Next Year's Fantasy Points" (NextYearFPs) for hockey players, an essential metric for fantasy hockey leagues and player performance analysis. The model aims to leverage historical player statistics to forecast future performance, using machine learning techniques.
+This project focuses on predicting "Next Year's Fantasy Points" (NextYearFPs) for hockey players, an essential metric for fantasy hockey leagues and player performance analysis. The model aims to leverage historical player statistics to forecast future performance, using machine learning and other regression techniques.
 
 Dataset
 
