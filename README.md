@@ -18,6 +18,7 @@ Requirements
     Python 3
     Pandas
     Scikit-Learn
+    R
 
 Contributing
 
