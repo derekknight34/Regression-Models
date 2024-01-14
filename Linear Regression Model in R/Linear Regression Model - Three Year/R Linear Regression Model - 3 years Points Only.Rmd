@@ -1,0 +1,89 @@
+---
+title: "Hockey Pool Linear Regression"
+author: "Derek Knight"
+date: "2023-12-12"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+class(df)
+
+
+df <- read.csv("Time Series Dataset - Filtered.csv")
+test_df <- read.csv("Predictions - Time Series.csv")
+
+```
+```{r}
+
+
+
+colnames(df) <- c("Player_id_1", "Rk_1", "Name_1", "Team_1", "Age_1", "Relative_Age_1", "GP_1", "G_1", "A_1", "PPG_1", "SHG_1", "GWG_1", "PPA_1", "SHA_1", "SHOTS_1", "HITS_1", "BS_1", "Year_1", "FantasyPoints_1", "NextYearId_1", "NextYearFPs_1",
+"Player_id_2", "Rk_2", "Name_2", "Team_2", "Age_2", "GP_2", "G_2", "A_2", "PPG_2", "SHG_2", "GWG_2", "PPA_2", "SHA_2", "SHOTS_2", "HITS_2", "BS_2", "Year_2", "FantasyPoints_2", "NextYearId_2", "NextYearFPs_2",
+"Player_id_3", "Rk_3", "Name_3", "Team_3", "Age_3", "GP_3", "G_3", "A_3", "PPG_3", "SHG_3", "GWG_3", "PPA_3", "SHA_3", "SHOTS_3", "HITS_3", "BS_3", "Year_3", "FantasyPoints_3", "NextYearId_3", "NextYearFPs_3")
+
+# Define the response variable
+y <- df$NextYearFPs_3
+
+# Fit a linear regression model with selected regressors
+selected_regressors <- c( "Relative_Age_1", "GP_1","FantasyPoints_1", "GP_2", "FantasyPoints_2", "GP_3", "FantasyPoints_3")
+
+# Include only the selected regressors in the formula
+formula_string <- paste("y ~", paste(selected_regressors, collapse = " + "))
+
+# Fit a linear regression model with selected regressors
+model <- lm(as.formula(formula_string), data = df)
+
+# View regression summary
+summary(model)
+
+anova(model)
+
+
+```
+```{r}
+residuals <- resid(model)
+# Residual Plot:
+# Residual plot to visually inspect the distribution of residuals and identify 
+plot(model, which = 1)
+
+# Normality Check:
+# Check for the normality of residuals using a Q-Q plot:
+qqnorm(residuals)
+qqline(residuals)
+
+# Homoscedasticity Check:
+# Check for constant variance (homoscedasticity) by plotting residuals against the predictor variable
+plot(df$GP_1, residuals)
+
+# Check for Outliers:
+# Identify potential outliers by examining the residuals. 
+boxplot(residuals)
+plot(model, which = 5)  # Leverage plot
+
+# Influence Points:
+# Identify influential observations using Cook's distance:
+infl <- influence.measures(model)
+# plot(infl, which = 4)  # Cook's distance plot
+```
+
+
+```{r}
+predictions <- predict(model, newdata = test_df)
+
+# Combine the original data with the predictions
+result_data <- cbind(test_df, Predictions = predictions)
+
+# Specify the file path for the CSV file
+csv_file_path <- "predictions - Time Series.csv"
+
+# Export the combined data to a CSV file
+write.csv(result_data, file = csv_file_path, row.names = FALSE)
+
+```
+
